@@ -1,7 +1,9 @@
 local vfsrt = {};
 ---
 --DO NOT Require this file.
---It provides limited functionality outside of being a daemon for vfs. require"vfs" is necessary to access the virtual filesystem API to define new virtual filesystems
+--It provides limited functionality outside of being a daemon for vfs
+--If you wish to access the vfsrt API for the purposes of direct file manipulation
+--A copy can be obtained using fs.getVFSRT()
 
 local __realfs = fs;
 
@@ -63,6 +65,13 @@ local function rootnode()
   return node;
 end
 
+local function checkInvalid(handler)
+  return function(path)
+    return handler.isInvalid and handler.isInvalid(path);
+  end
+end
+
+local enumerate;
 
 function vfsrt.list(node)
   if not node.__stat then
@@ -70,14 +79,23 @@ function vfsrt.list(node)
   elseif not node.__stat.directory then
     return {};
   end
-  local list = {};
-  local mount = getMountNode(node);
-  for i,v in ipairs(handleAction(node,function(handler) return handler.list end)) do
-    list[i] = vfsrt.toNode(v,mount);
+  if handleAction(node,checkInvalid) then
+    enumerate(node);
   end
+  local list = {};
+  for k,v in pairs(node.__children) do
+    table.insert(list,k);
+  end
+  table.sort(list);
   return list;
 end
 
+local function enumerate(node)
+  local mount = getMountNode(node);
+  for i,v in ipairs(handleAction(node,function(handler) return handler.list end)) do
+    vfsrt.toNode(v,mount);
+  end
+end
 
 function vfsrt.mount(node,handler)
   if not node.__stat then
@@ -94,11 +112,17 @@ function vfsrt.mount(node,handler)
 end
 
 function vfsrt.mknod(node,handler)
-  if node.__parent.__children[node.__name] then
-    return nil,"Cannot create device file "..node..": file exists";
+  if not node.__parent.__stat then
+    return nil,"Cannot create device file "..node..": no such file or directory";
   elseif not node.__parent.__stat.writeable then
     return nil,"Cannot create device file "..node..": parent isn't writeable";
+  elseif node.__stat then
+    return nil,"Cannot create device file "..node..": file exists";
+  
   else
+    handle = vfsrt.open(vfsrt.getnode(getMountNode(node),"$$ccvfs-devices"),"a");
+    handle:write(handleAction(node,getlocalpath).."\n");
+    handle:close();
     node.__mount = handler;
     node.__parent.__children[node.__name] = node;
     node.__stat = {writeable=(not handler.isReadOnly()),device=true};
@@ -158,6 +182,11 @@ function vfsrt.rename(node,newName,newParent)
     node.__name = newName;
     newParent.__children[newName] = node;
     return node;
+  elseif node.__stat.directory then
+    vfsrt.mkdir(newParent);
+    for i,v in ipairs(vfsrt.list(node)) do
+      vfsrt.rename(v,v.__name,newParent);
+    end
   else
     vfsrt.copy(node,newNode);
     vfsrt.unlink(node);
@@ -279,6 +308,18 @@ function vfsrt.chroot(node)
   _chroot.__children['.'] = _chroot;
   _chroot.__children['..'] = _chroot;
   _chroot.__chroot = node;
+end
+
+function vfsrt.ln(node,to)
+  if node.__stat then
+    return nil,"Cannot link "..node.." to "..to..": file exists";
+  elseif not node.__parent.__stat then
+    return nil,"Cannot create hard link "..to..": no such file or directory";
+  elseif not node.__parent.__writeable then
+    return nil,"Cannot create hard link "..to..": parent not writeable";
+  else
+    
+  end
 end
 
 local function getMountNode(node)

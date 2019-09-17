@@ -4,4 +4,5 @@
 	<buildpathentry kind="src" path="global-apis"/>
 	<buildpathentry kind="src" path="internal-apis"/>
 	<buildpathentry kind="src" path="commands"/>
+	<buildpathentry kind="src" path="startup"/>
 </buildpath>

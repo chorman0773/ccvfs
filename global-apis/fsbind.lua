@@ -15,6 +15,9 @@ local function _chroot(node)
   function fsbind.mknod(path,handler)
     vfsrt.mknod(vfsrt.toNode(path,node),handler);
   end
+  function fsbind.getVFSRT()
+    return vfsrt;
+  end
   
 end
 
