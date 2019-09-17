@@ -27,19 +27,19 @@ Replacement api for ComputerCraft's fs library, allowing for the manipulation of
   This program provides several APIs, startup scripts, and shell commands which allow for the direct use of the APIs through the CraftOS Shell. 
   
 ### Installed APIS
-  `fsbind` (as `fs`): replaces the standard ComputerCraft `fs` api with a modular one which allows for virtual files and filesystems. 
-  `mounts`: Allows for other progams to introduce new mount handles to be consumed by `fsbind`.
-  `devices`: Similar to `mounts` but for virtual/device files.
+* `fsbind` (as `fs`): replaces the standard ComputerCraft `fs` api with a modular one which allows for virtual files and filesystems. 
+* `mounts`: Allows for other progams to introduce new mount handles to be consumed by `fsbind`.
+* `devices`: Similar to `mounts` but for virtual/device files.
   
 ### Installed Shell Commands
-  `mknod`: Creates a device file with given properties. 
-  `mount`: Mounts some sort of virtual filesystem to a given directory
-  `chroot`: Executes a program within a constrained environment, mapping absolute paths to paths resolved with some prefix.
-  `ls`: Lists the files in a given directory, optionally with the file's properties
-  `stat`: Lists the properties of a given file or directory. 
-  `ln`: Forms symbolic links between files, or hard links on mounts that support them.
+* `mknod`: Creates a device file with given properties. 
+* `mount`: Mounts some sort of virtual filesystem to a given directory
+* `chroot`: Executes a program within a constrained environment, mapping absolute paths to paths resolved with some prefix.
+* `ls`: Lists the files in a given directory, optionally with the file's properties
+* `stat`: Lists the properties of a given file or directory. 
+* `ln`: Forms symbolic links between files, or hard links on mounts that support them.
  
 ### Installed Startup Scripts
 
-  `00vfs_inject.lua`: Run before all other startup scripts. Replaces the standard `fs` api with `fsbind`. 
-  `load_mounts.lua`: If there is an `/etc/fstab` file, activates the mounts given in that file.
+* `00vfs_inject.lua`: Run before all other startup scripts. Replaces the standard `fs` api with `fsbind`. 
+* `load_mounts.lua`: If there is an `/etc/fstab` file, activates the mounts given in that file.
