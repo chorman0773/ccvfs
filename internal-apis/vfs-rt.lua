@@ -71,7 +71,12 @@ local function checkInvalid(handler)
   end
 end
 
-local enumerate;
+local function enumerate(node)
+  local mount = getMountNode(node);
+  for i,v in ipairs(handleAction(node,function(handler) return handler.list end)) do
+    vfsrt.toNode(v,mount);
+  end
+end
 
 function vfsrt.list(node)
   if not node.__stat then
@@ -83,19 +88,14 @@ function vfsrt.list(node)
     enumerate(node);
   end
   local list = {};
-  for k,v in pairs(node.__children) do
+  for k,_ in pairs(node.__children) do
     table.insert(list,k);
   end
   table.sort(list);
   return list;
 end
 
-local function enumerate(node)
-  local mount = getMountNode(node);
-  for i,v in ipairs(handleAction(node,function(handler) return handler.list end)) do
-    vfsrt.toNode(v,mount);
-  end
-end
+
 
 function vfsrt.mount(node,handler)
   if not node.__stat then
@@ -120,7 +120,7 @@ function vfsrt.mknod(node,handler)
     return nil,"Cannot create device file "..node..": file exists";
   
   else
-    handle = vfsrt.open(vfsrt.getnode(getMountNode(node),"$$ccvfs-devices"),"a");
+    local handle = vfsrt.open(vfsrt.getnode(getMountNode(node),"$$ccvfs-devices"),"a");
     handle:write(handleAction(node,getlocalpath).."\n");
     handle:close();
     node.__mount = handler;
@@ -320,6 +320,10 @@ function vfsrt.ln(node,to)
   else
     
   end
+end
+
+function vfsrt.getMountName(node)
+  return handleAction(node,function(handler) return handler.getDrive end);
 end
 
 local function getMountNode(node)
